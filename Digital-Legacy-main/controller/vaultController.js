@@ -24,6 +24,17 @@ exports.createVault = async (req, res) => {
     }
 };
 
+// Get User Vaults
+exports.getVaults = async (req, res) => {
+    try {
+        const vaults = await Vault.find({ user: req.user.id });
+        res.json(vaults);
+    } catch (err) {
+        console.error("ERROR:", err.message);
+        res.status(500).json({ msg: 'Error retrieving vaults' });
+    }
+};
+
 
 
 // Upload Memory
@@ -97,6 +108,18 @@ exports.deleteMemory = async (req, res) => {
 
     try {
 
+        const memory = await Memory.findById(req.params.id);
+        if (!memory) return res.status(404).json({ msg: 'Memory not found' });
+
+        if (memory.filePath) {
+            const fs = require('fs');
+            const path = require('path');
+            const fullPath = path.join(__dirname, '..', memory.filePath);
+            if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+            }
+        }
+
         await Memory.findByIdAndDelete(req.params.id);
 
         res.json({ msg: 'Memory deleted' });
@@ -106,10 +129,44 @@ exports.deleteMemory = async (req, res) => {
     }
 
 };
+
+// Delete vault
+exports.deleteVault = async (req, res) => {
+    try {
+        const vault = await Vault.findById(req.params.id);
+        if (!vault) return res.status(404).json({ msg: 'Vault not found' });
+
+        if (vault.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        const memories = await Memory.find({ vault: req.params.id });
+        const fs = require('fs');
+        const path = require('path');
+
+        for (const memory of memories) {
+            if (memory.filePath) {
+                const fullPath = path.join(__dirname, '..', memory.filePath);
+                if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                }
+            }
+            await Memory.findByIdAndDelete(memory._id);
+        }
+
+        await Vault.findByIdAndDelete(req.params.id);
+        res.json({ msg: 'Vault deleted' });
+    } catch (err) {
+        console.error("ERROR:", err.message);
+        res.status(500).json({ msg: 'Delete failed' });
+    }
+};
 module.exports = {
   createVault: exports.createVault,
+  getVaults: exports.getVaults,
   uploadMemory: exports.uploadMemory,
   getMemories: exports.getMemories,
   updateMemory: exports.updateMemory,
-  deleteMemory: exports.deleteMemory
+  deleteMemory: exports.deleteMemory,
+  deleteVault: exports.deleteVault
 };
