@@ -28,7 +28,6 @@ export default function Login() {
                 if (res.data.requires2FA) {
                     setTempToken(res.data.tempToken);
                     setShow2FA(true);
-                    alert('A verification code has been sent to your email.');
                 } else {
                     localStorage.setItem('token', res.data.token);
                     navigate('/dashboard');
