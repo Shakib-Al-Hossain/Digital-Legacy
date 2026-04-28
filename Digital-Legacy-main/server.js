@@ -22,6 +22,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/cse470_proj
 app.use('/api/auth', require('./route/authRoute'));
 app.use('/api/profile', require('./route/profileRoute'));
 app.use('/api/vault', require('./route/vaultRoute'));
+app.use('/api/admin', require('./route/adminRoute'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

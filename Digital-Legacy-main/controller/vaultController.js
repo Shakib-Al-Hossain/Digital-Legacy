@@ -35,7 +35,57 @@ exports.getVaults = async (req, res) => {
     }
 };
 
+// Get Memory Owner Dashboard Statistics
+exports.getOwnerDashboardStats = async (req, res) => {
+    try {
+        const userId = req.user.id;
 
+        const vaults = await Vault.find({ user: userId }).select('_id');
+        const vaultIds = vaults.map(vault => vault._id);
+
+        const totalVaults = vaults.length;
+        const totalMemories = await Memory.countDocuments({
+            vault: { $in: vaultIds }
+        });
+
+        const categoryStats = await Memory.aggregate([
+            {
+                $match: {
+                    vault: { $in: vaultIds }
+                }
+            },
+            {
+                $group: {
+                    _id: '$category',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const memoriesByCategory = {
+            Emotional: 0,
+            Legal: 0,
+            Financial: 0,
+            Personal: 0
+        };
+
+        categoryStats.forEach(item => {
+            if (item._id) {
+                memoriesByCategory[item._id] = item.count;
+            }
+        });
+
+        res.json({
+            totalVaults,
+            totalMemories,
+            memoriesByCategory
+        });
+
+    } catch (err) {
+        console.error("Dashboard stats error:", err.message);
+        res.status(500).json({ msg: 'Failed to load dashboard statistics' });
+    }
+};
 
 // Upload Memory
 exports.uploadMemory = async (req, res) => {
@@ -164,6 +214,7 @@ exports.deleteVault = async (req, res) => {
 module.exports = {
   createVault: exports.createVault,
   getVaults: exports.getVaults,
+  getOwnerDashboardStats: exports.getOwnerDashboardStats,
   uploadMemory: exports.uploadMemory,
   getMemories: exports.getMemories,
   updateMemory: exports.updateMemory,

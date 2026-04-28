@@ -53,7 +53,15 @@ export default function Login() {
                 { headers: { 'x-auth-token': tempToken } }
             );
             localStorage.setItem('token', res.data.token);
-            navigate('/dashboard');
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+
+            if (res.data.user.role === 'Administrator') {
+                navigate('/admin-dashboard');
+            } else if (res.data.user.role === 'Legacy Contact') {
+                navigate('/legacy-dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             alert(err.response?.data?.msg || 'Invalid verification code');
         }

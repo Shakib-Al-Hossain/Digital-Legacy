@@ -9,6 +9,16 @@ export default function Dashboard() {
     const [memoryTimeline, setMemoryTimeline] = useState([]);
     const [showTimeline, setShowTimeline] = useState(false);
     const [showSessions, setShowSessions] = useState(false);
+    const [stats, setStats] = useState({
+        totalVaults: 0,
+        totalMemories: 0,
+        memoriesByCategory: {
+            Emotional: 0,
+            Legal: 0,
+            Financial: 0,
+            Personal: 0
+        }
+    });
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
 
@@ -20,6 +30,10 @@ export default function Dashboard() {
                     headers: { 'x-auth-token': localStorage.getItem('token') }
                 });
                 setSessions(resSessions.data);
+                const resStats = await axios.get('http://127.0.0.1:5000/api/vault/dashboard/stats', {
+                    headers: { 'x-auth-token': localStorage.getItem('token') }
+                });
+                setStats(resStats.data);
 
                 // Fetch vaults & cross-vault memories for timeline
                 const resVaults = await axios.get('http://127.0.0.1:5000/api/vault', {
@@ -58,6 +72,7 @@ export default function Dashboard() {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate('/login');
     };
 
@@ -82,6 +97,38 @@ export default function Dashboard() {
                 <p className="text-muted">Welcome to your Digital Legacy & Memory Preservation System.</p>
 
                 <div className="dashboard-grid">
+                    
+                    {/* Memory Owner Statistics */}
+                    <div className="widget">
+                        <div className="widget-header">
+                            <span>Total Vaults</span>
+                            <Archive size={20} style={{ color: 'var(--primary)' }} />
+                        </div>
+                        <h2>{stats.totalVaults}</h2>
+                        <p className="text-sm text-muted">Vaults created by you</p>
+                    </div>
+
+                    <div className="widget">
+                        <div className="widget-header">
+                            <span>Total Memories</span>
+                            <Activity size={20} style={{ color: 'var(--primary)' }} />
+                        </div>
+                        <h2>{stats.totalMemories}</h2>
+                        <p className="text-sm text-muted">Memories uploaded across all vaults</p>
+                    </div>
+
+                    <div className="widget">
+                        <div className="widget-header">
+                            <span>Memories by Category</span>
+                            <Shield size={20} style={{ color: 'var(--primary)' }} />
+                        </div>
+
+                        <p>Emotional: {stats.memoriesByCategory?.Emotional || 0}</p>
+                        <p>Legal: {stats.memoriesByCategory?.Legal || 0}</p>
+                        <p>Financial: {stats.memoriesByCategory?.Financial || 0}</p>
+                        <p>Personal: {stats.memoriesByCategory?.Personal || 0}</p>
+                    </div>
+                   
 
                     {/* Timeline Visualization */}
                     <div className="widget" style={{ cursor: showTimeline ? 'default' : 'pointer', alignSelf: 'start' }} onClick={() => !showTimeline && setShowTimeline(true)}>
