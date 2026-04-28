@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
+export default function Login({ title = 'Welcome to Digital Legacy', expectedRole = null }) {
     const [isLogin, setIsLogin] = useState(true);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [forgotStep, setForgotStep] = useState(1); // 1 = enter email, 2 = enter otp, 3 = enter new password
     const [forgotOtp, setForgotOtp] = useState('');
@@ -20,11 +22,16 @@ export default function Login() {
 
     const navigate = useNavigate();
 
+
     const handleAuth = async (e) => {
         e.preventDefault();
+        setErrorMsg('');
+        setSuccessMsg('');
         try {
             if (isLogin) {
-                const res = await axios.post('http://127.0.0.1:5000/api/auth/login', { email, password });
+                const reqBody = { email, password };
+                if (expectedRole) reqBody.expectedRole = expectedRole;
+                const res = await axios.post('http://127.0.0.1:5000/api/auth/login', reqBody);
                 if (res.data.requires2FA) {
                     setTempToken(res.data.tempToken);
                     setShow2FA(true);
@@ -34,19 +41,20 @@ export default function Login() {
                 }
             } else {
                 if (password !== confirmPassword) {
-                    return alert("Passwords do not match");
+                    return setErrorMsg("Passwords do not match");
                 }
                 await axios.post('http://127.0.0.1:5000/api/auth/register', { name, email, password });
-                alert('Account created successfully! Please sign in.');
+                setSuccessMsg('Account created successfully! Please sign in.');
                 setIsLogin(true); // Switch to login screen
             }
         } catch (err) {
-            alert(err.response?.data?.msg || 'Error signing in');
+            setErrorMsg(err.response?.data?.msg || 'Error signing in');
         }
     };
 
     const handle2FAVerify = async (e) => {
         e.preventDefault();
+        setErrorMsg('');
         try {
             const res = await axios.post('http://127.0.0.1:5000/api/auth/2fa/verify',
                 { token: twoFactorToken },
@@ -63,35 +71,40 @@ export default function Login() {
                 navigate('/dashboard');
             }
         } catch (err) {
-            alert(err.response?.data?.msg || 'Invalid verification code');
+            setErrorMsg(err.response?.data?.msg || 'Invalid verification code');
         }
     };
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
+        setErrorMsg('');
+        setSuccessMsg('');
         try {
             await axios.post('http://127.0.0.1:5000/api/auth/forgot-password', { email });
-            alert('If that email exists, an OTP has been sent. Please check your inbox.');
+            setSuccessMsg('If that email exists, an OTP has been sent. Please check your inbox.');
             setForgotStep(2);
         } catch (err) {
-            alert(err.response?.data?.msg || 'Error sending password reset email');
+            setErrorMsg(err.response?.data?.msg || 'Error sending password reset email');
         }
     };
 
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
+        setErrorMsg('');
         try {
             await axios.post('http://127.0.0.1:5000/api/auth/verify-reset-otp', { email, otp: forgotOtp });
             setForgotStep(3);
         } catch (err) {
-            alert(err.response?.data?.msg || 'Invalid or expired OTP');
+            setErrorMsg(err.response?.data?.msg || 'Invalid or expired OTP');
         }
     };
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
+        setErrorMsg('');
+        setSuccessMsg('');
         if (newPassword !== confirmPassword) {
-            return alert("Passwords do not match");
+            return setErrorMsg("Passwords do not match");
         }
         try {
             await axios.post('http://127.0.0.1:5000/api/auth/reset-password', {
@@ -99,7 +112,7 @@ export default function Login() {
                 otp: forgotOtp,
                 newPassword
             });
-            alert('Password reset successfully! Please log in with your new password.');
+            setSuccessMsg('Password reset successfully! Please log in with your new password.');
             setIsForgotPassword(false);
             setForgotStep(1);
             setForgotOtp('');
@@ -107,12 +120,36 @@ export default function Login() {
             setConfirmPassword('');
             setPassword('');
         } catch (err) {
-            alert(err.response?.data?.msg || 'Invalid or expired OTP');
+            setErrorMsg(err.response?.data?.msg || 'Invalid or expired OTP');
         }
     };
 
     return (
         <div className="auth-container">
+            {errorMsg && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+                    <div className="glass-panel" style={{ width: '400px', textAlign: 'center' }}>
+                        <h3 style={{ color: 'var(--danger)' }}>Access Denied</h3>
+                        <p className="mt-4 mb-4 text-muted">{errorMsg}</p>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button className="btn" style={{ width: '100px', background: 'var(--bg-gradient-1)' }} onClick={() => setErrorMsg('')}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {successMsg && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+                    <div className="glass-panel" style={{ width: '400px', textAlign: 'center' }}>
+                        <h3 style={{ color: '#10b981' }}>Success</h3>
+                        <p className="mt-4 mb-4 text-muted">{successMsg}</p>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button className="btn" style={{ width: '100px', background: 'var(--bg-gradient-1)' }} onClick={() => setSuccessMsg('')}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="glass-panel auth-box">
                 {isForgotPassword ? (
                     <div>
@@ -184,7 +221,8 @@ export default function Login() {
                     </div>
                 ) : (
                     <div>
-                        <h2>{isLogin ? 'Welcome to Digital Legacy' : 'Create Account'}</h2>
+                        <h2 style={isLogin ? { marginBottom: '0.25rem' } : {}}>{isLogin ? 'Welcome to Digital Legacy' : 'Create Account'}</h2>
+                        {isLogin && <p className="text-muted" style={{ textAlign: 'center', marginBottom: '2rem', fontWeight: 500 }}>{title}</p>}
                         <form onSubmit={handleAuth}>
                             {!isLogin && (
                                 <div className="input-group">

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
@@ -9,6 +10,13 @@ import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import './index.css';
 
+// Immediately clean up any mock tokens from previous tests
+const token = localStorage.getItem('token');
+if (token && token.startsWith('mock-token-')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+}
+
 const getDashboardPath = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -16,6 +24,8 @@ const getDashboardPath = () => {
   if (user.role === 'Legacy Contact') return '/legacy-dashboard';
   return '/dashboard';
 };
+
+
 
 const PrivateRoute = ({ children }) => {
   return localStorage.getItem('token') ? children : <Navigate to="/login" />;
@@ -26,7 +36,10 @@ const RoleRoute = ({ children, roles }) => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   if (!token) return <Navigate to="/login" />;
-  if (!roles.includes(user.role)) return <Navigate to="/unauthorized" />;
+  
+  // Default to 'Memory Owner' if role is missing to fix old localStorage issues
+  const userRole = user.role || 'Memory Owner';
+  if (!roles.includes(userRole)) return <Navigate to="/unauthorized" />;
 
   return children;
 };
@@ -42,7 +55,10 @@ function App() {
       <Router>
         <Routes>
 
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/admin" element={<PublicRoute><Login title="Admin Login" expectedRole="Administrator" /></PublicRoute>} />
+          <Route path="/memory-owner" element={<PublicRoute><Login title="Memory Owner Login" expectedRole="Memory Owner" /></PublicRoute>} />
+          <Route path="/legacy-contact" element={<PublicRoute><Login title="Legacy Contact Login" expectedRole="Legacy Contact" /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login title="Memory Owner Login" expectedRole="Memory Owner" /></PublicRoute>} />
           <Route
             path="/dashboard"
             element={

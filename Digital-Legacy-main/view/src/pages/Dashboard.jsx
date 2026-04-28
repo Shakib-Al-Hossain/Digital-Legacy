@@ -130,6 +130,9 @@ export default function Dashboard() {
                     </div>
                    
 
+                </div>
+
+                <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
                     {/* Timeline Visualization */}
                     <div className="widget" style={{ cursor: showTimeline ? 'default' : 'pointer', alignSelf: 'start' }} onClick={() => !showTimeline && setShowTimeline(true)}>
                         <div className="widget-header" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setShowTimeline(!showTimeline); }}>

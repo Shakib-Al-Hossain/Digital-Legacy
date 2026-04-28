@@ -45,6 +45,11 @@ exports.login = async (req, res) => {
 
         if (!user.isActive) return res.status(400).json({ msg: 'Account deactivated' });
 
+        const { expectedRole } = req.body;
+        if (expectedRole && user.role !== expectedRole) {
+            return res.status(403).json({ msg: `Access denied. You are not a ${expectedRole}.` });
+        }
+
         // Generate a 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.twoFactorSecret = otp;
