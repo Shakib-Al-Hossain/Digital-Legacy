@@ -23,12 +23,28 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/cse470_proj
 }).catch(err => console.log(err));
 
 // Routes
-app.use('/api/auth',     require('./route/authRoute'));
-app.use('/api/profile',  require('./route/profileRoute'));
-app.use('/api/vault',    require('./route/vaultRoute'));
-app.use('/api/admin',    require('./route/adminRoute'));
+app.use('/api/auth', require('./route/authRoute'));
+app.use('/api/profile', require('./route/profileRoute'));
+app.use('/api/vault', require('./route/vaultRoute'));
+app.use('/api/admin', require('./route/adminRoute'));
 app.use('/api/contacts', require('./route/contactRoute'));
-app.use('/api/legacy',   require('./route/legacyRoute'));   // Part 4
+app.use('/api/legacy', require('./route/legacyRoute'));   // Part 4
+
+//DeadManTrigger with Cron
+const cron = require('node-cron');
+
+const profileController = require('./controller/profileController');
+
+// Runs every day at midnight (12:00 AM)
+cron.schedule('0 0 * * *', async () => {
+    console.log('Running Dead Man Trigger check...');
+
+    try {
+        await profileController.checkDeadManTrigger();
+    } catch (err) {
+        console.error('Dead Man Trigger Error:', err);
+    }
+});
 
 
 const PORT = process.env.PORT || 5000;

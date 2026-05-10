@@ -62,7 +62,7 @@ exports.login = async (req, res) => {
         user.twoFactorSecret = otp;
         await user.save();
 
-        
+
         try {
             // Configure Nodemailer for Gmail
             const transporter = nodemailer.createTransport({
@@ -114,6 +114,10 @@ exports.verify2FA = async (req, res) => {
         // Clear the OTP to prevent reuse
         user.twoFactorSecret = '';
         user.isTwoFactorEnabled = true; // Mark as verified for tracking
+
+        if (!user.deadManTrigger) user.deadManTrigger = {};
+        user.deadManTrigger.lastActive = Date.now();
+        user.deadManTrigger.emailSent = false;
 
         // Track Session Activity
         const newSession = new Session({

@@ -13,7 +13,8 @@ const UserSchema = new mongoose.Schema({
     deadManTrigger: {
         enabled: { type: Boolean, default: false },
         lastActive: { type: Date, default: Date.now },
-        triggerDurationDays: { type: Number, default: 30 }
+        triggerDurationDays: { type: Number, default: 30 },
+        emailSent: { type: Boolean, default: false },
     }
 }, { timestamps: true });
 
