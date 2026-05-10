@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { Activity, Archive, User, LogOut, Mail, Clock, Send, Trash2, RefreshCw, ChevronDown, ChevronRight, Plus, X, Package, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Activity, Archive, User, LogOut, Mail, Clock, Send, Trash2, RefreshCw, ChevronDown, ChevronRight, Plus, X, Package, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 
 const API = 'http://127.0.0.1:5000/api';
 const headers = () => ({ 'x-auth-token': localStorage.getItem('token') });
@@ -147,6 +147,7 @@ export default function LegacyMessages() {
                     <Link to="/vault" className="nav-item"><Archive size={20} /> My Vaults</Link>
                     <Link to="/legacy-messages" className="nav-item active"><Mail size={20} /> Legacy Messages</Link>
                     <Link to="/profile" className="nav-item"><User size={20} /> Profile</Link>
+                    <Link to="/contacts" className="nav-item"><Shield size={20} /> Contacts & Security</Link>
                     <li className="nav-item" style={{ marginTop: 'auto', color: 'var(--danger)' }} onClick={handleLogout}><LogOut size={20} /> Logout</li>
                 </ul>
             </aside>

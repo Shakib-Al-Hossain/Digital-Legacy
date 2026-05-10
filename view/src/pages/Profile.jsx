@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Activity, LogOut, Settings, Save, UserPlus, AlertTriangle, Shield, Moon, Sun, Archive } from 'lucide-react';
+import { User, Activity, LogOut, Settings, Save, UserPlus, AlertTriangle, Shield, Moon, Sun, Archive, Mail } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Profile() {
@@ -106,7 +106,9 @@ export default function Profile() {
                 <ul className="nav-links">
                     <Link to="/dashboard" className="nav-item"><Activity size={20} /> Dashboard</Link>
                     <Link to="/vault" className="nav-item"><Archive size={20} /> My Vaults</Link>
+                    <Link to="/legacy-messages" className="nav-item"><Mail size={20} /> Legacy Messages</Link>
                     <Link to="/profile" className="nav-item active"><User size={20} /> Profile</Link>
+                    <Link to="/contacts" className="nav-item"><Shield size={20} /> Contacts & Security</Link>
                     <li className="nav-item" style={{ marginTop: 'auto', color: 'var(--danger)' }} onClick={() => { localStorage.removeItem('token'); navigate('/login'); }}>
                         <LogOut size={20} /> Logout
                     </li>

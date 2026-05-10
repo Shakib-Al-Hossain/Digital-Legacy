@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { Archive, Plus, FolderOpen, Upload, Trash2, Edit3, X, Activity, User, LogOut, File, ExternalLink, Image, Film } from 'lucide-react';
+import { Archive, Plus, FolderOpen, Upload, Trash2, Edit3, X, Activity, User, LogOut, File, ExternalLink, Image, Film, Mail, Shield } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Vault() {
@@ -182,7 +182,9 @@ export default function Vault() {
                 <ul className="nav-links">
                     <Link to="/dashboard" className="nav-item"><Activity size={20} /> Dashboard</Link>
                     <Link to="/vault" className="nav-item active"><Archive size={20} /> My Vaults</Link>
+                    <Link to="/legacy-messages" className="nav-item"><Mail size={20} /> Legacy Messages</Link>
                     <Link to="/profile" className="nav-item"><User size={20} /> Profile</Link>
+                    <Link to="/contacts" className="nav-item"><Shield size={20} /> Contacts & Security</Link>
                     <li className="nav-item" style={{ marginTop: 'auto', color: 'var(--danger)' }} onClick={handleLogout}>
                         <LogOut size={20} /> Logout
                     </li>
